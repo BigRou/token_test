@@ -1,0 +1,7 @@
+{
+    "default_prompt": "请用500字左右介绍一下人工智能的发展历程和未来趋势。",
+    "temperature": 0.7,
+    "max_tokens": 2048,
+    "default_api_url": "https://coding.dashscope.aliyuncs.com/v1",
+    "default_protocol": "openai"
+}

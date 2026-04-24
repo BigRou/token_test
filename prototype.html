@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI模型速度测试 - 原型图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "Segoe UI", Tahoma, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .window {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .title-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-bar .icon {
+            font-size: 20px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-header .icon {
+            color: #667eea;
+        }
+
+        .section-body {
+            padding: 15px;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .model-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .model-item:hover {
+            background: #f9f9f9;
+            border-color: #667eea;
+        }
+
+        .model-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .model-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .model-item .protocol-tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            background: #e8f4fd;
+            color: #1976d2;
+            border-radius: 3px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+            border: none;
+        }
+
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+            border: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .radio-item input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .input-text {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .input-text:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea.input-text {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .input-number {
+            width: 100px;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .result-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .result-table .status-success {
+            color: #4caf50;
+            font-weight: 500;
+        }
+
+        .result-table .status-failed {
+            color: #f44336;
+            font-weight: 500;
+        }
+
+        .result-table .speed-high {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .result-table .speed-medium {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .result-table .speed-low {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge-warning {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: #999;
+            margin-left: 5px;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .testing-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #fff3e0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .testing-indicator.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .inline-flex {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <div class="title-bar">
+            <span class="icon">⚡</span>
+            <span>AI模型速度测试工具</span>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <div class="section-header">
+                    <span class="icon">📦</span>
+                    <span>模型选择</span>
+                </div>
+                <div class="section-body">
+                    <div class="model-grid">
+                        <div class="model-item">
+                            <input type="checkbox" id="model1" checked>
+                            <label for="model1">qwen3.5-plus</label>
+                            <span class="protocol-tag">OpenAI</span>
+                        </div>
+                        <div class="model-item">
+                            <input type="checkbox" id="model2" checked>
+                            <label for="model2">glm-5</label>
+                            <span class="protocol-tag">OpenAI</span>
+                        </div>
+                        <div class="model-item">
+                            <input type="checkbox" id="model3" checked>
+                            <label for="model3">MiniMax-M2.5</label>
+                            <span class="protocol-tag">OpenAI</span>
+                        </div>
+                        <div class="model-item">
+                            <input type="checkbox" id="model4" checked>
+                            <label for="model4">kimi-k2.5</label>
+                            <span class="protocol-tag">OpenAI</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="showModal('addModel')">➕ 添加模型</button>
+                        <button class="btn btn-secondary" onclick="showModal('editModel')">✏️ 编辑模型</button>
+                        <button class="btn btn-secondary">🗑️ 删除模型</button>
+                        <button class="btn btn-secondary">📥 导入配置</button>
+                        <button class="btn btn-secondary">📤 导出配置</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <span class="icon">⚙️</span>
+                    <span>测试配置</span>
+                </div>
+                <div class="section-body">
+                    <div class="form-group">
+                        <label>测试提示词</label>
+                        <textarea class="input-text" id="prompt" placeholder="请输入测试提示词...">请用500字左右介绍一下人工智能的发展历程和未来趋势。</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Temperature</label>
+                            <input type="number" class="input-number" value="0.7" min="0" max="2" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Tokens</label>
+                            <input type="number" class="input-number" value="2048" min="1" max="32000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <span class="icon">🎮</span>
+                    <span>操作控制</span>
+                </div>
+                <div class="section-body">
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="startTest()">▶️ 开始测试</button>
+                        <button class="btn btn-danger">⏹️ 停止测试</button>
+                        <button class="btn btn-warning">📊 导出结果</button>
+                    </div>
+                    <div class="testing-indicator" id="testingIndicator">
+                        <div class="spinner"></div>
+                        <span>正在测试中... 已完成: 2/4 模型</span>
+                        <div class="progress-bar" style="flex: 1; margin-left: 10px;">
+                            <div class="progress" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <span class="icon">📊</span>
+                    <span>测试结果</span>
+                    <span class="badge badge-success" style="margin-left: auto;">测试完成</span>
+                </div>
+                <div class="section-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">测试模型数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">成功率</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">135ms</div>
+                            <div class="stat-label">平均首次响应</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">132/s</div>
+                            <div class="stat-label">平均Token速度</div>
+                        </div>
+                    </div>
+
+                    <table class="result-table" style="margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th>模型名称</th>
+                                <th>状态</th>
+                                <th>首次Token响应</th>
+                                <th>总用时</th>
+                                <th>Token数</th>
+                                <th>生成速度</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>qwen3.5-plus</strong> <span class="badge badge-info">OpenAI</span></td>
+                                <td><span class="status-success">✓ 成功</span></td>
+                                <td>120ms</td>
+                                <td>3.52s</td>
+                                <td>520</td>
+                                <td><span class="speed-high">148/s</span></td>
+                                <td><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">查看详情</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>glm-5</strong> <span class="badge badge-info">OpenAI</span></td>
+                                <td><span class="status-success">✓ 成功</span></td>
+                                <td>150ms</td>
+                                <td>4.21s</td>
+                                <td>498</td>
+                                <td><span class="speed-medium">118/s</span></td>
+                                <td><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">查看详情</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>MiniMax-M2.5</strong> <span class="badge badge-info">OpenAI</span></td>
+                                <td><span class="status-success">✓ 成功</span></td>
+                                <td>135ms</td>
+                                <td>3.89s</td>
+                                <td>512</td>
+                                <td><span class="speed-high">132/s</span></td>
+                                <td><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">查看详情</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>kimi-k2.5</strong> <span class="badge badge-info">OpenAI</span></td>
+                                <td><span class="status-success">✓ 成功</span></td>
+                                <td>138ms</td>
+                                <td>4.05s</td>
+                                <td>505</td>
+                                <td><span class="speed-medium">125/s</span></td>
+                                <td><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">查看详情</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addModelModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>➕ 添加模型</h3>
+                <button class="modal-close" onclick="hideModal('addModel')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>模型名称 *</label>
+                    <input type="text" class="input-text" placeholder="例如: gpt-4">
+                </div>
+                <div class="form-group">
+                    <label>API接口地址 *</label>
+                    <input type="text" class="input-text" placeholder="例如: https://api.openai.com/v1">
+                </div>
+                <div class="form-group">
+                    <label>API密钥 *</label>
+                    <input type="password" class="input-text" placeholder="输入您的API密钥">
+                </div>
+                <div class="form-group">
+                    <label>接口协议 *</label>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="protocol" value="openai" checked>
+                            <span>OpenAI兼容</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="protocol" value="anthropic">
+                            <span>Anthropic兼容</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Temperature</label>
+                        <input type="number" class="input-text" value="0.7" min="0" max="2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Tokens</label>
+                        <input type="number" class="input-text" value="2048" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <input type="text" class="input-text" placeholder="可选的备注信息">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('addModel')">取消</button>
+                <button class="btn btn-primary">测试连接</button>
+                <button class="btn btn-success">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModelModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>✏️ 编辑模型</h3>
+                <button class="modal-close" onclick="hideModal('editModel')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>选择模型</label>
+                    <select class="input-text">
+                        <option>qwen3.5-plus</option>
+                        <option>glm-5</option>
+                        <option>MiniMax-M2.5</option>
+                        <option>kimi-k2.5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>模型名称</label>
+                    <input type="text" class="input-text" value="qwen3.5-plus">
+                </div>
+                <div class="form-group">
+                    <label>API接口地址</label>
+                    <input type="text" class="input-text" value="https://coding.dashscope.aliyuncs.com/v1">
+                </div>
+                <div class="form-group">
+                    <label>API密钥</label>
+                    <input type="password" class="input-text" value="sk-xxxxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>接口协议</label>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="protocol2" value="openai" checked>
+                            <span>OpenAI兼容</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="protocol2" value="anthropic">
+                            <span>Anthropic兼容</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Temperature</label>
+                        <input type="number" class="input-text" value="0.7" min="0" max="2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Tokens</label>
+                        <input type="number" class="input-text" value="2048" min="1">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('editModel')">取消</button>
+                <button class="btn btn-primary">测试连接</button>
+                <button class="btn btn-success">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showModal(type) {
+            if (type === 'addModel') {
+                document.getElementById('addModelModal').classList.add('active');
+            } else if (type === 'editModel') {
+                document.getElementById('editModelModal').classList.add('active');
+            }
+        }
+
+        function hideModal(type) {
+            if (type === 'addModel') {
+                document.getElementById('addModelModal').classList.remove('active');
+            } else if (type === 'editModel') {
+                document.getElementById('editModelModal').classList.remove('active');
+            }
+        }
+
+        function startTest() {
+            const indicator = document.getElementById('testingIndicator');
+            indicator.classList.add('active');
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
